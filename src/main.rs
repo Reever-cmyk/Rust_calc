@@ -1,28 +1,24 @@
-// Taschenrechner Projekt. 1. Grundlegende Operationen einpflegen +, -, *, /,...
+// Taschenrechner Projekt. 1. Grundlegende Operationen erkennen +, -, *, /,...
 use std::io;
-
 fn main() {
-
+    println!("Hallo ich bin dein interaktiver Taschenrechner.");
     loop{
-        let mut cmd = String::new();
+        println!("Wie kann ich dir behilflich sein? Gib deine Mathe Problem direkt ein.");
 
-        println!("Hallo ich bin dein interaktiver Taschenrechner.");
-        println!("Wie kann ich dir helfen? Du kannst deine Mathe Probleme direkt eingeben.");
+        let mut input = String::new();
+        let sign = ['+','-','*','/'];
+        io::stdin().read_line(&mut input).expect("Das habe ich nicht verstanden bitte nocheimal.");
 
-        io::stdin().read_line(&mut cmd).expect("Das habe ich nicht verstanden bitte nocheinmal.");
-
-        let parts: Vec<&str> = cmd.trim().split('+').collect();
-
-        if parts.len() >= 2 {
-            // Teile vor und nach Pluszeichen in Zahlen umwandeln
-            if let (Ok(num1), Ok(num2)) = (parts[0].trim().parse::<i32>(), parts[1].trim().parse::<i32>()) {
-                let summe = num1 + num2;
-                println!("Die Summe aus {} + {} = {}", num1, num2, summe);
-            } else {
-                println!("Fehler beim Umwandeln der Teile in Zahlen.");
-            }
+        if let Some(position) = input.find(sign) {
+            let operator = input.chars().nth(position).unwrap();
+            println!("Der Operator ist: {}", operator);
         } else {
-            println!("Upsi da ging etwas Schief. Bitte nocheinmal.");
+            println!("Kein Operator gefunden.");
         }
+
+
+        println!("inputstring {input}");
+        println!("Operator {operator}");
+
     }
 }
