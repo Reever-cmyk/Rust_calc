@@ -1,3 +1,4 @@
+//TODO: Klammern, Potenzen implementieren
 use std::io;
 fn main() {
     println!("Hallo ich bin dein interaktiver Taschenrechner.");
