@@ -9,13 +9,13 @@ fn main() {
 
         let result = calc(input.trim());
         match result {
-            Some(res) => println!("Das Ergebnis: {}", res),
+            Some(res) => println!("Das Ergebnis: {:?}", res),
             None => println!("Ungültige Eingabe!"),
         }
     }
 }
 
-fn calc(input: &str) -> Option<f64> {
+fn calc(input: &str) -> Option<Result<f64, &str>> {
     let mut nums: Vec<f64> = Vec::new();
     let mut ops: Vec<char> = Vec::new();
     let mut num_buffer = String::new();
@@ -24,7 +24,7 @@ fn calc(input: &str) -> Option<f64> {
         match ch {
             '*' | '/' | '+' | '-' => {
                 if num_buffer.is_empty() {
-                    return None; // Ungültige Eingabe: Operator ohne Operanden
+                    return Some(Err("Ungültige Eingabe: Operator ohne Operanden"));
                 }
                 let num = num_buffer.parse::<f64>().ok()?;
                 nums.push(num);
@@ -34,7 +34,7 @@ fn calc(input: &str) -> Option<f64> {
             '0'..='9' | '.' => {
                 num_buffer.push(ch);
             }
-            _ => return None, // Ungültiges Zeichen in der Eingabe
+            _ => return Some(Err("Ungültige Eingabe: Ungültiges Zeichen")),
         }
     }
 
@@ -44,7 +44,7 @@ fn calc(input: &str) -> Option<f64> {
     }
 
     if nums.len() != ops.len() + 1 {
-        return None; // Ungültige Eingabe: Nicht genug Operatoren oder Operanden
+        return Some(Err("Ungültige Eingabe: Nicht genug Operatoren oder Operanden"));
     }
 
     // Berechne zuerst Multiplikationen und Divisionen
@@ -57,7 +57,7 @@ fn calc(input: &str) -> Option<f64> {
                     if nums[i + 1] != 0.0 {
                         nums[i] / nums[i + 1]
                     } else {
-                        return None; // Division durch Null
+                        return Some(Err("Ungültige Eingabe: Division durch Null"));
                     }
                 }
                 _ => unreachable!(), // Unmöglicher Fall
@@ -76,9 +76,9 @@ fn calc(input: &str) -> Option<f64> {
         match ops[i] {
             '+' => result += nums[i + 1],
             '-' => result -= nums[i + 1],
-            _ => return None, // Ungültiger Operator
+            _ => return Some(Err("Ungültige Eingabe: Ungültiger Operator")), // Ungültiger Operator
         }
     }
 
-    Some(result)
+    Some(Ok(result))
 }
