@@ -1,27 +1,84 @@
-// Taschenrechner Projekt. 1. Grundlegende Operationen einpflegen +, -, *, /,...
 use std::io;
-
 fn main() {
+    println!("Hallo ich bin dein interaktiver Taschenrechner.");
+    loop {
+        println!("Input:");
 
-    loop{
-        let mut cmd = String::new();
+        let mut input = String::new();
+        io::stdin().read_line(&mut input).expect("Eingabefehler");
 
-        println!("Hallo ich bin dein interaktiver Taschenrechner.");
-        println!("Wie kann ich dir helfen? Du kannst deine Mathe Probleme direkt eingeben.");
-
-        io::stdin().read_line(&mut cmd).expect("Das habe ich nicht verstanden bitte nocheinmal.");
-
-        let parts: Vec<&str> = cmd.trim().split('+').collect();
-        if parts.len() >= 2 {
-            // Teile vor und nach Pluszeichen in Zahlen umwandeln
-            if let (Ok(num1), Ok(num2)) = (parts[0].trim().parse::<i32>(), parts[1].trim().parse::<i32>()) {
-                let summe = num1 + num2;
-                println!("Die Summe von {} und {} ist: {}", num1, num2, summe);
-            } else {
-                println!("Fehler beim Umwandeln der Teile in Zahlen.");
-            }
-        } else {
-            println!("Der eingegebene String enthält kein Pluszeichen oder hat nicht genügend Teile.");
+        let result = calc(input.trim());
+        match result {
+            Some(res) => println!("Das Ergebnis: {}", res),
+            None => println!("Ungültige Eingabe!"),
         }
     }
+}
+
+fn calc(input: &str) -> Option<f64> {
+    let mut nums: Vec<f64> = Vec::new();
+    let mut ops: Vec<char> = Vec::new();
+    let mut num_buffer = String::new();
+
+    for ch in input.chars() {
+        match ch {
+            '*' | '/' | '+' | '-' => {
+                if num_buffer.is_empty() {
+                    return None; // Ungültige Eingabe: Operator ohne Operanden
+                }
+                let num = num_buffer.parse::<f64>().ok()?;
+                nums.push(num);
+                num_buffer.clear();
+                ops.push(ch);
+            }
+            '0'..='9' | '.' => {
+                num_buffer.push(ch);
+            }
+            _ => return None, // Ungültiges Zeichen in der Eingabe
+        }
+    }
+
+    if !num_buffer.is_empty() {
+        let num = num_buffer.parse::<f64>().ok()?;
+        nums.push(num);
+    }
+
+    if nums.len() != ops.len() + 1 {
+        return None; // Ungültige Eingabe: Nicht genug Operatoren oder Operanden
+    }
+
+    // Berechne zuerst Multiplikationen und Divisionen
+    let mut i = 0;
+    while i < ops.len() {
+        if ops[i] == '*' || ops[i] == '/' {
+            let result = match ops[i] {
+                '*' => nums[i] * nums[i + 1],
+                '/' => {
+                    if nums[i + 1] != 0.0 {
+                        nums[i] / nums[i + 1]
+                    } else {
+                        return None; // Division durch Null
+                    }
+                }
+                _ => unreachable!(), // Unmöglicher Fall
+            };
+            nums[i] = result;
+            nums.remove(i + 1);
+            ops.remove(i);
+        } else {
+            i += 1;
+        }
+    }
+
+    // Berechne Additionen und Subtraktionen
+    let mut result = nums[0];
+    for i in 0..ops.len() {
+        match ops[i] {
+            '+' => result += nums[i + 1],
+            '-' => result -= nums[i + 1],
+            _ => return None, // Ungültiger Operator
+        }
+    }
+
+    Some(result)
 }
